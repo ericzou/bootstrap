@@ -116,4 +116,65 @@ module.exports = function(grunt) {
     var options = ['--no-single-run', '--auto-watch'].concat(this.args);
     runTestacular('start', options);
   });
+
+  grunt.registerTask('directive', 'Create placeholder code for a new directive with given name', function() {
+    if (this.args.length === 0) {
+      grunt.fatal("Directive name expected, got none");
+    } else {
+      this.args.forEach(function(directiveName) {
+        var dir = 'src/' + directiveName;
+        var templObject = { name: directiveName };
+        grunt.file.mkdir(dir + '/test');  
+        grunt.file.mkdir(dir + '/demo');  
+        grunt.file.write(dir + '/' + directiveName + '.js',
+         grunt.template.process(DIRECTIVE_JS_TPL, templObject));
+        grunt.file.write(dir + '/test/' + directiveName + 'Spec.js',
+          grunt.template.process(DIRECTIVE_TEST_TPL, templObject));
+        grunt.file.write(dir + '/demo/index.html', 
+          grunt.template.process(DIRECTIVE_HTML_TPL, templObject));
+      });
+    }
+  });
 };
+
+var DIRECTIVE_JS_TPL = [
+  "angular.module('ui.bootstrap.<%=name%>', [])",
+  ".directive('<%=name%>', [function() {",
+  "  return {",
+  "    restrict: 'ECA',",
+  "    templateUrl: 'template/<%=name%>/<%=name%>.html',",
+  "    scope: {",
+  "      text: '='",
+  "    },",
+  "    link: function(scope, elm, attrs) {",
+  "    }",
+  "  };",
+  "});"
+].join("\n");
+var DIRECTIVE_TEST_TPL = [
+  "describe('<%=name%> test', function() {",
+  "  var $compile, $scope, elm;",
+  "  ",
+  "  beforeEach(module('ui.bootstrap.<%=name%>'));",
+  "  //grunt compiles each template as a module in the tests,",
+  "  //so we just have to 'load' it",
+  "  beforeEach(module('template/<%=name%>/<%=name%>.html'));",
+  "  ",
+  "  //Inject rootScope and compile and get variable references to them",
+  "  //Use underscore notation so we can get their real names",
+  "  beforeEach(inject(function(_$rootScope_, _$compile_) {",
+  "    $scope = _$rootScope_.$new();",
+  "    $compile = _$compile_;",
+  "  }));",
+  "  ",
+  "  it('should create element with hello text', function() {",
+  "    elm = $compile(\"<<%=name% text=\"'hello!'\"></<%=name%>>\")($scope);",
+  "    $scope.$apply();",
+  "    expect(elm.find('div').text()).toBe('hello!');",
+  "  });",
+  "});"
+].join("\n");
+var DIRECTIVE_HTML_TPL = "<div>{{text}}</div>";
+var DIRECTIVE_DEMO_TPL = "<<%=name%> text=\"'Hello, <%=name%>'\"></<%=name%>>";
+
+
