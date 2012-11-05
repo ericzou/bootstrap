@@ -7,7 +7,8 @@
 ## Development
 ### Prepare your environment
 * Install [Node.js](http://nodejs.org/) and NPM (should come with)
-* Install global dev dependencies: `npm install -g grunt@0.3.x testacular@0.2.x`
+* Install global dev dependencies: `npm install -g grunt testacular`
+* Instal local dev dependencies: `npm install` while current directory is bootstrap repo
 
 ### Run unit tests
 * Start testacular server: `grunt server`
@@ -15,3 +16,7 @@
 
 ### Before commit
 * Build the whole project: `grunt` - this will run `lint`, `test`, and `concat` targets
+
+## Contributing to the project
+
+ We are always looking for the quality contributions! Please check the CONTRIBUTING.md for the contribution guidelines.
