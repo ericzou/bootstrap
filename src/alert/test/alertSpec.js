@@ -1,72 +1,74 @@
-// describe("alert", function() {
-//   var scope, element;
+describe("alert", function() {
+  var scope, ctrl, model, $compile;
 
-//   beforeEach(module('ui.bootstrap.alert'));
-//   beforeEach(module('template/alert/alert.html'));
+  beforeEach(module('ui.bootstrap.alert'));
+  beforeEach(module('template/alert/alert.html'));
 
-//   beforeEach(inject(function($rootScope, _$compile_) {
-//     scope = $rootScope.$new();
-//     $compile = _$compile_;
+  beforeEach(inject(function($rootScope, _$compile_, $controller) {
+    var tpl;
 
-//     element = $('<div>');
-//   }));
+    scope = $rootScope;
+    $compile = _$compile_;
 
-//   function createAlert(type) {
-//     var tpl;
+    tpl = 
+      "<alert ng-repeat='alert in alerts' type='alert.type'" + 
+         "close='removeAlert($index)'>{{alert.msg}}" + 
+      "</alert>";
+    
+    element = angular.element("<div></div>");
+    element.append(tpl);
+    
+    model = [
+        { msg: 'foo', type: 'success'},
+        { msg: 'bar', type: 'error'},
+        { msg: 'baz' }
+    ];
 
-//     if (type) {
-//       tpl = '<alert type="' + type + '">foobar</alert>';
-//     } else {
-//       tpl = '<alert>foobar</alert>';
-//     }
+  }));
 
-//     alert = $compile(angular.element(tpl))(scope);
-//     scope.$apply();
-//     return alert;
-//   }
+  function createAlerts() {
+    var alerts;
 
-//   function findDismissButton() {
-//     return element.find('button.close');
-//   }
+    $compile(element)(scope);
+    scope.$digest();
 
-//   describe('types', function() {
+    alerts = element.find('.alert');
+    expect(alerts.length).toEqual(0);
 
-//     it("should have alert-error class", function() {
-//       element.append(createAlert("error"));
-//       expect(element.find('.alert')).toHaveClass("alert-error");
-//     });
+    scope.$apply(function() {
+      scope.alerts = model;
+    });
 
-//     it("should have alert-success class", function() {
-//       element.append(createAlert("success"));
-//       expect(element.find('.alert')).toHaveClass("alert-success");
-//     });  
+    return element.find('.alert');
+  }
 
-//     it("should default to alert-info class", function() {
-//       element.append(createAlert());
-//       expect(element.find('.alert')).toHaveClass("alert-info");
-//     });  
+  function findCloseButton(index) {
+    return element.find('.alert button').eq(index);
+  }
 
-//   });
+  it("should generate alerts using ng-repeat", function() {
+    var alerts = createAlerts();
+    expect(alerts.length).toEqual(3);
+  });
 
-//   describe('close button', function() {
+  it("should use correct alert type", function() {
+    var alerts = createAlerts();
+    expect(alerts.eq(0)).toHaveClass('alert-success');
+    expect(alerts.eq(1)).toHaveClass('alert-error');
+    expect(alerts.eq(2)).toHaveClass('alert-info');
+  });
 
-//     beforeEach(function() {
-//       element.append(createAlert());
-//     });
+  it("should fire callback when closed", function() {
 
-//     it("should have button for dismissing the alert", function() {
-//       expect(findDismissButton().length).toEqual(1);
-//     });
+    var alerts = createAlerts();
+    
+    scope.$apply(function() {
+      scope.removeAlert = jasmine.createSpy();  
+    });
 
-//     it("should dismiss alert when click on the button", function() {
-//       expect(element.find('.alert').length).toEqual(1);
+    findCloseButton(1).click();
 
-//       findDismissButton().click();
-//       scope.$apply();
+    expect(scope.removeAlert).toHaveBeenCalledWith(1);
+  });
 
-//       expect(element.find('.alert').length).toEqual(0);
-//     });
-
-//   });
-
-// });
+});
